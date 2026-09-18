@@ -1,4 +1,5 @@
 # itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
+# Mirror (rendered): https://docker-minecraft-server.readthedocs.io/en/latest/
 # Modpack: Prominence II – Hasturian Era – lore-rich RPG (talent tree, artifacts, bosses).
 #   Modrinth page: https://modrinth.com/modpack/prominence-2-fabric
 #   Permanent link (id EGs3lC8D): https://modrinth.com/project/EGs3lC8D
@@ -23,13 +24,10 @@ services:
       - /etc/localtime:/etc/localtime:ro
     expose: ["25565"]
     healthcheck:
-      test: ["CMD", "mc-monitor", "status", "--host", "localhost"]
+      test: ["CMD", "mc-monitor", "status", "--host", "127.0.0.1"]
       interval: 45s
       timeout: 15s
       retries: 4
-    networks:
-      mc_network:
-        ipv4_address: 172.30.0.8
 
   playit-mc4:
     image: ghcr.io/playit-cloud/playit-agent:0.17
@@ -45,10 +43,3 @@ services:
       mc4:
         condition: service_healthy
     network_mode: "service:mc4"
-
-networks:
-  mc_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.30.0.0/24

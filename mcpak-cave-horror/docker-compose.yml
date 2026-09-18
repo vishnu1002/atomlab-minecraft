@@ -1,4 +1,5 @@
 # itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
+# Mirror (rendered): https://docker-minecraft-server.readthedocs.io/en/latest/
 # Modpack: Cave Horror Project 1 – horror survival, 200+ FTB quests.
 #   Modrinth page: https://modrinth.com/modpack/cave-horror-project-modpack
 #   Permanent link (id KRCZSt8F): https://modrinth.com/project/KRCZSt8F
@@ -24,13 +25,10 @@ services:
       - /etc/localtime:/etc/localtime:ro
     expose: ["25565"]
     healthcheck:
-      test: ["CMD", "mc-monitor", "status", "--host", "localhost"]
+      test: ["CMD", "mc-monitor", "status", "--host", "127.0.0.1"]
       interval: 45s
       timeout: 15s
       retries: 4
-    networks:
-      mc_network:
-        ipv4_address: 172.30.0.7
 
   playit-mc3:
     image: ghcr.io/playit-cloud/playit-agent:0.17
@@ -46,10 +44,3 @@ services:
       mc3:
         condition: service_healthy
     network_mode: "service:mc3"
-
-networks:
-  mc_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.30.0.0/24

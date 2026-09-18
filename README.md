@@ -10,7 +10,7 @@ All stacks share one playit key, so the public address follows whichever
 server is up.
 
 Public address (all servers, default port `25565`, no port needed) — find
-yours in the [playit dashboard](https://playit.gg) under Tunnels:
+yours in the [playit dashboard](https://playit.gg/account/tunnels) under Tunnels:
 
 ```text
 <your-address>.playit.gg
@@ -34,6 +34,7 @@ time, so peak usage stays ~10G for the game + system headroom.
 Configure future servers from these references:
 
 **itzg/minecraft-server** — https://github.com/itzg/docker-minecraft-server/tree/master/docs
+(rendered mirror: https://docker-minecraft-server.readthedocs.io/en/latest/)
 
 - `docs/configuration/` – server.properties, difficulty, memory, JVM/Aikar flags
 - `docs/mods-and-plugins/` – `TYPE: FABRIC`, `MODRINTH_*`, modpack setup

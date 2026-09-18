@@ -1,4 +1,5 @@
 # itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
+# Mirror (rendered): https://docker-minecraft-server.readthedocs.io/en/latest/
 # Server: mc1 "Vanilla+" – custom Fabric server (NOT a Modrinth modpack).
 # TYPE=FABRIC, VERSION=26.1.2, SEED=8500081009970950196, MEMORY=5G.
 # Mods are pinned individually via MODRINTH_PROJECTS below (perf: lithium,
@@ -65,9 +66,6 @@ services:
       interval: 45s
       timeout: 15s
       retries: 4
-    networks:
-      mc_network:
-        ipv4_address: 172.30.0.5
   playit-mc1:
     image: ghcr.io/playit-cloud/playit-agent:0.17
     container_name: playit-mc1
@@ -82,10 +80,3 @@ services:
       mc1:
         condition: service_healthy
     network_mode: "service:mc1"
-
-networks:
-  mc_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.30.0.0/24
