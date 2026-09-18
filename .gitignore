@@ -2,11 +2,8 @@
 .env
 **/.env
 
-# itzg /data mounts – fully regenerated on `docker compose up`
-mc1/
-mcpak-alaskan-wilderness/data/
+# itzg /data mounts – server worlds, regenerated on `docker compose up`
+mc1/data/
 mcpak-cave-horror/data/
-# future-proof for old compose template
-mc2/
-mc3/
+mcpak-prominence-2/data/
 data/

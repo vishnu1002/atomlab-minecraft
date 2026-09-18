@@ -52,7 +52,7 @@ services:
         glitchcore:26.1.2.0.2
         ping-wheel:1.12.1
     volumes: 
-      - ./mc1:/data
+      - ./data:/data
       - /etc/localtime:/etc/localtime:ro
     expose: ["25565"]
     healthcheck:
@@ -68,7 +68,7 @@ services:
     container_name: playit-mc1
     restart: unless-stopped
     environment:
-      SECRET_KEY: ${MC1_SECRET_KEY}
+      SECRET_KEY: ${SECRET_KEY}
       TZ: "UTC"
     volumes:
       - /etc/localtime:/etc/localtime:ro
