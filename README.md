@@ -110,6 +110,12 @@ plus `defaultconfigs/` / `kubejs/` where present). `mods/`, `libraries/`,
 `docker compose up`. Output: `backup/<stack>-DD-MM-YYYY.tar.gz`
 (git-ignored). Safe to run while the server is up (does
 `save-all flush` first; aborts that stack if the flush fails).
+Compression uses `pigz` (parallel gzip, same `.tar.gz` format) when
+available with `gzip` fallback, and a live progress line is shown:
+
+```text
+[PROGRESS] mc1-18-09-2026.tar.gz: 1.2G / ~3.9G (31%)
+```
 
 Restore (compose files come from git, only data comes from the backup):
 

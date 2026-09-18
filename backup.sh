@@ -28,7 +28,7 @@ backup_one() {
   container="$(container_for "$stack")"
 
   if [ ! -d "$data_dir/world" ]; then
-    echo ">> $stack: no data/world found, skipping (server never started?)."
+    echo "[INFO] $stack: no data/world found, skipping (server never started?)."
     return 0
   fi
 
@@ -45,9 +45,9 @@ backup_one() {
 
   # Flush world to disk if the server is running (crash-consistent backup).
   if docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$container"; then
-    echo ">> $stack: server '$container' is running, flushing world to disk..."
+    echo "[INFO] $stack: server '$container' is running, flushing world to disk..."
     if ! docker exec "$container" rcon-cli save-all flush >/dev/null 2>&1; then
-      echo "!! $stack: 'save-all flush' failed, aborting this backup to avoid a torn world."
+      echo "[ERROR] $stack: 'save-all flush' failed, aborting this backup to avoid a torn world."
       return 1
     fi
   fi
@@ -76,22 +76,69 @@ backup_one() {
   done
 
   if [ "${#includes[@]}" -eq 0 ]; then
-    echo ">> $stack: nothing to back up, skipping."
+    echo "[INFO] $stack: nothing to back up, skipping."
     return 0
   fi
 
   mkdir -p "$BACKUP_ROOT"
-  echo ">> $stack: saving ${includes[*]}"
-  echo "   -> $backup_file"
-  tar -czf "$backup_file" -C "$data_dir" "${includes[@]}"
-  du -h "$backup_file"
-  echo ">> $stack: done. File is in ./backup/: $(basename "$backup_file")"
+  echo "[INFO] $stack: ${includes[*]}"
+
+  # Progress + speed: stream tar through a byte counter (progress %) into
+  # pigz (parallel gzip, same .tar.gz format) with gzip fallback.
+  local total=0
+  total=$(du -scb "${includes[@]/#/$data_dir/}" 2>/dev/null | tail -n 1 | cut -f1)
+  local compressor="gzip"
+  if command -v pigz >/dev/null 2>&1; then
+    compressor="pigz"
+  fi
+
+  if command -v python3 >/dev/null 2>&1 && [ "${total:-0}" -gt 0 ]; then
+    tar -cf - -C "$data_dir" "${includes[@]}" \
+      | python3 -c '
+import os, sys, time
+total = int(sys.argv[1])
+label = sys.argv[2]
+start = time.time()
+counted = 0
+last = 0.0
+def fmt(b):
+    f = float(b)
+    for u in ["B", "K", "M", "G", "T"]:
+        if f < 1024 or u == "T":
+            return f"{f:.1f}{u}"
+        f /= 1024
+inp = sys.stdin.buffer
+out = sys.stdout.buffer
+try:
+    while True:
+        chunk = inp.read(1024 * 1024)
+        if not chunk:
+            break
+        out.write(chunk)
+        counted += len(chunk)
+        now = time.time()
+        if now - last >= 0.5:
+            last = now
+            pct = min(100.0, counted * 100.0 / total) if total > 0 else 0.0
+            sys.stderr.write(f"\r[PROGRESS] {label}: {fmt(counted)} / ~{fmt(total)} ({pct:.0f}%)")
+            sys.stderr.flush()
+except BrokenPipeError:
+    pass
+sys.stderr.write(f"\r[PROGRESS] {label}: {fmt(counted)} / ~{fmt(total)} (100%)\n")
+sys.stderr.flush()
+' "$total" "$(basename "$backup_file")" \
+      | "$compressor" -c > "$backup_file"
+  else
+    tar -czf "$backup_file" -C "$data_dir" "${includes[@]}"
+  fi
+  size=$(du -h "$backup_file" | cut -f1)
+  echo "[DONE] $backup_file [$size]"
 }
 
 echo "=== $REPO_NAME manual backup ==="
-echo "Saves world + settings only (mods reinstall via docker compose up)."
+echo "Saves world + settings only"
 echo ""
-echo "Which server to back up?"
+echo "Which world to back up?"
 echo "  1) mc1"
 echo "  2) mcpak-cave-horror"
 echo "  3) mcpak-prominence-2"
@@ -110,7 +157,14 @@ case "$choice" in
 esac
 
 echo ""
-echo "Destination: $BACKUP_ROOT/<stack>-$DATE.tar.gz"
+if [ "${#targets[@]}" -eq 1 ]; then
+  echo "Destination: $BACKUP_ROOT/${targets[0]}-$DATE.tar.gz"
+else
+  echo "Destination:"
+  for t in "${targets[@]}"; do
+    echo "  $BACKUP_ROOT/${t}-$DATE.tar.gz"
+  done
+fi
 confirm=""
 read -r -p "Proceed with [${targets[*]}]? [y/N] " confirm
 case "$confirm" in
@@ -132,5 +186,9 @@ if [ "$failed" -ne 0 ]; then
   echo "Finished with errors (see above)."
   exit 1
 fi
-echo "All done."
-echo "Restore: docker compose down && tar -xzf <backup>.tar.gz -C <stack>/data/ && docker compose up -d"
+echo "All backup done."
+if [ "${#targets[@]}" -eq 1 ]; then
+  echo "Restore: cd ${targets[0]} && docker compose down && tar -xzf ../backup/${targets[0]}-${DATE}.tar.gz -C data/ && docker compose up -d"
+else
+  echo "Restore: cd <stack> && docker compose down && tar -xzf ../backup/<stack>-DD-MM-YYYY.tar.gz -C data/ && docker compose up -d"
+fi
