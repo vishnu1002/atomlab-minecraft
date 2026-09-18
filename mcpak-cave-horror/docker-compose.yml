@@ -1,0 +1,51 @@
+services:
+  # Your existing mc1 and playit-mc1 stay here...
+
+  mc2:
+    image: itzg/minecraft-server:java17
+    container_name: mc2
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    environment:
+      EULA: "TRUE"
+      MEMORY: "10G"
+      TYPE: "MODRINTH"
+      MODRINTH_MODPACK: "https://modrinth.com/modpack/alaskan-wilderness/version/1.0.0"
+      MODRINTH_EXCLUDE_MODS: "distanthorizons,oculus,just-zoom"
+      VERSION: "1.20.1"
+      ONLINE_MODE: "FALSE"
+      MOTD: "Alaskan Wilderness"
+    volumes:
+      - ./data:/data
+      - /etc/localtime:/etc/localtime:ro
+    expose: ["25565"]
+    healthcheck:
+      test: ["CMD", "mc-monitor", "status", "--host", "localhost"]
+      interval: 45s
+      timeout: 15s
+      retries: 4
+    networks:
+      mc_network:
+        ipv4_address: 172.30.0.6
+
+  playit-mc2:
+    image: ghcr.io/playit-cloud/playit-agent:0.17
+    container_name: playit-mc2
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      TZ: "UTC"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      mc2:
+        condition: service_healthy
+    network_mode: "service:mc2"
+
+networks:
+  mc_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

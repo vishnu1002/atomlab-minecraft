@@ -1,0 +1,84 @@
+services:
+  mc1:
+    image: itzg/minecraft-server:latest
+    container_name: mc1
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    environment:
+      EULA: "TRUE"
+      TYPE: "FABRIC"
+      VERSION: "26.1.2"
+      MEMORY: "5G"
+      DIFFICULTY: "normal"
+      MODE: "survival"
+      TZ: "UTC"
+      USE_AIKAR_FLAGS: "true"
+      SEED: "8500081009970950196"
+      ENABLE_AUTOPAUSE: "false"
+      ONLINE_MODE: "FALSE"
+      MOTD: "MC1"
+      SPAWN_PROTECTION: "0"
+      MAX_TICK_TIME: "-1"
+      VIEW_DISTANCE: "30"
+      SIMULATION_DISTANCE: "20"
+      CREATE_CONSOLE_IN_PIPE: "true"
+      MODRINTH_LOADER: "fabric"
+      MODRINTH_PROJECTS: |
+        fabric-api:0.152.1+26.1.2
+        cloth-config:26.1.154+fabric
+        fabric-language-kotlin:1.13.12+kotlin.2.4.0
+        resourceful-lib:4.0.1
+        yacl:3.9.4+26.1-fabric
+        c2me-fabric:0.4.0-alpha.0.12+26.1.2
+        chunky:1.5.3
+        lithium:mc26.1.2-0.24.6-fabric
+        ferrite-core:9.0.0-fabric
+        xaeros-world-map:fabric-26.1.2-1.41.0
+        xaeros-minimap:fabric-26.1.2-26.1.0
+        veinminer:2.10.3
+        skinrestorer:2.8.1+26.1-fabric
+        universal-graves:3.11.1+26.1.2
+        polymer:0.16.5+26.1.2
+        mns-moogs-nether-structures:2.1.0
+        moogs-voyager-structures:5.0.11
+        moogs-structure-lib:2.0.1-26.1.0-26.1.2
+        more-mobs:1.5.9+mod
+        friends-and-foes:fabric-4.0.26+mc26.1.2
+        spawn-animations:1.11.4+bump+mod
+        mine-treasure:1.6.3+mod
+        fallingtree:26.1.2-26.1.2.4
+        glitchcore:26.1.2.0.2
+        ping-wheel:1.12.1
+    volumes: 
+      - ./mc1:/data
+      - /etc/localtime:/etc/localtime:ro
+    expose: ["25565"]
+    healthcheck:
+      test: ["CMD", "mc-monitor", "status", "--host", "127.0.0.1"]
+      interval: 45s
+      timeout: 15s
+      retries: 4
+    networks:
+      mc_network:
+        ipv4_address: 172.30.0.5
+  playit-mc1:
+    image: ghcr.io/playit-cloud/playit-agent:0.17
+    container_name: playit-mc1
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${MC1_SECRET_KEY}
+      TZ: "UTC"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      mc1:
+        condition: service_healthy
+    network_mode: "service:mc1"
+
+networks:
+  mc_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
