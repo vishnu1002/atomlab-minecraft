@@ -51,6 +51,10 @@ Configure future servers from these references:
 - Dashboard (tunnels, addresses): https://playit.gg
 - Here the agent runs as a sidecar (`network_mode: service:<game>`) sharing the
   game container's network, so the tunnel reaches `25565` with no published ports.
+- No static container IPs: each stack uses its default Compose network and the
+  sidecar talks to the game over localhost; Docker DNS resolves services
+  (`mc1`, `mc3`, `mc4`) by name if ever needed. Tested working (player join +
+  tunnel traffic verified after dropping the old `172.30.0.0/24` assignments).
 
 ## Servers
 
