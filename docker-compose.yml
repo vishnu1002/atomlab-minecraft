@@ -1,3 +1,4 @@
+# itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
 services:
   mc1:
     image: itzg/minecraft-server:latest
