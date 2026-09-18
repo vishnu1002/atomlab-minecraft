@@ -1,9 +1,10 @@
+# itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
+# Pack: Cave Horror Project 1 (KRCZSt8F), Forge 1.20.1, pinned v3.6
+# Note: Simple Voice Chat (UDP 24454) not tunneled via playit TCP setup
 services:
-  # Your existing mc1 and playit-mc1 stay here...
-
-  mc2:
+  mc3:
     image: itzg/minecraft-server:java17
-    container_name: mc2
+    container_name: mc3
     restart: unless-stopped
     tty: true
     stdin_open: true
@@ -11,11 +12,10 @@ services:
       EULA: "TRUE"
       MEMORY: "10G"
       TYPE: "MODRINTH"
-      MODRINTH_MODPACK: "https://modrinth.com/modpack/alaskan-wilderness/version/1.0.0"
-      MODRINTH_EXCLUDE_MODS: "distanthorizons,oculus,just-zoom"
+      MODRINTH_MODPACK: "https://modrinth.com/modpack/cave-horror-project-modpack/version/v3.6"
       VERSION: "1.20.1"
       ONLINE_MODE: "FALSE"
-      MOTD: "Alaskan Wilderness"
+      MOTD: "Cave Horror"
     volumes:
       - ./data:/data
       - /etc/localtime:/etc/localtime:ro
@@ -27,11 +27,11 @@ services:
       retries: 4
     networks:
       mc_network:
-        ipv4_address: 172.30.0.6
+        ipv4_address: 172.30.0.7
 
-  playit-mc2:
+  playit-mc3:
     image: ghcr.io/playit-cloud/playit-agent:0.17
-    container_name: playit-mc2
+    container_name: playit-mc3
     restart: unless-stopped
     environment:
       SECRET_KEY: ${SECRET_KEY}
@@ -39,9 +39,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
-      mc2:
+      mc3:
         condition: service_healthy
-    network_mode: "service:mc2"
+    network_mode: "service:mc3"
 
 networks:
   mc_network:
