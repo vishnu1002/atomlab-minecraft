@@ -17,6 +17,14 @@ Most useful sections:
 - `docs/data-directory.md` – `/data` volume layout
 - `docs/sending-commands/` – RCON / console (`CREATE_CONSOLE_IN_PIPE`)
 
+## Servers
+
+| Server | Address | Pack | MC/Loader |
+|---|---|---|---|
+| mc3 Cave Horror | `hdd-greene.tun.ply.gg` (default port 25565, no port needed) | Cave Horror Project v3.6 | 1.20.1 Forge |
+
+Client note: install the matching modpack version, then Multiplayer → Add Server → paste address as-is.
+
 ## Layout
 
 - `docker-compose.yml` – active `mc1` (Fabric) + `playit-mc1` tunnel
