@@ -1,5 +1,8 @@
 # itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
-# Pack: Cave Horror Project 1 (KRCZSt8F), Forge 1.20.1, pinned v3.6
+# Modpack: Cave Horror Project 1 – horror survival, 200+ FTB quests.
+#   Modrinth page: https://modrinth.com/modpack/cave-horror-project-modpack
+#   Permanent link (id KRCZSt8F): https://modrinth.com/project/KRCZSt8F
+# Pinned version: v3.6 | Loader: Forge | MC: 1.20.1 (image java17) | MEMORY=10G
 # Note: Simple Voice Chat (UDP 24454) not tunneled via playit TCP setup
 services:
   mc3:
@@ -33,8 +36,9 @@ services:
     image: ghcr.io/playit-cloud/playit-agent:0.17
     container_name: playit-mc3
     restart: unless-stopped
+    env_file:
+      - ../.env # shared repo-root playit key (SECRET_KEY)
     environment:
-      SECRET_KEY: ${SECRET_KEY}
       TZ: "UTC"
     volumes:
       - /etc/localtime:/etc/localtime:ro

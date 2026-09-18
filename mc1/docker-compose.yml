@@ -1,4 +1,9 @@
 # itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
+# Server: mc1 "Vanilla+" – custom Fabric server (NOT a Modrinth modpack).
+# TYPE=FABRIC, VERSION=26.1.2, SEED=8500081009970950196, MEMORY=5G.
+# Mods are pinned individually via MODRINTH_PROJECTS below (perf: lithium,
+# ferrite-core, c2me; maps: xaero; utility: veinminer, graves, skinrestorer...).
+# Client needs the same Fabric loader + mod versions (see README).
 services:
   mc1:
     image: itzg/minecraft-server:latest
@@ -67,8 +72,9 @@ services:
     image: ghcr.io/playit-cloud/playit-agent:0.17
     container_name: playit-mc1
     restart: unless-stopped
+    env_file:
+      - ../.env # shared repo-root playit key (SECRET_KEY)
     environment:
-      SECRET_KEY: ${SECRET_KEY}
       TZ: "UTC"
     volumes:
       - /etc/localtime:/etc/localtime:ro

@@ -1,5 +1,8 @@
 # itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
-# Pack: Prominence II Hasturian Era (EGs3lC8D), Fabric 1.20.1, pinned v4.1.0
+# Modpack: Prominence II – Hasturian Era – lore-rich RPG (talent tree, artifacts, bosses).
+#   Modrinth page: https://modrinth.com/modpack/prominence-2-fabric
+#   Permanent link (id EGs3lC8D): https://modrinth.com/project/EGs3lC8D
+# Pinned version: v4.1.0 | Loader: Fabric | MC: 1.20.1 (image java17) | MEMORY=10G
 services:
   mc4:
     image: itzg/minecraft-server:java17
@@ -32,8 +35,9 @@ services:
     image: ghcr.io/playit-cloud/playit-agent:0.17
     container_name: playit-mc4
     restart: unless-stopped
+    env_file:
+      - ../.env # shared repo-root playit key (SECRET_KEY)
     environment:
-      SECRET_KEY: ${SECRET_KEY}
       TZ: "UTC"
     volumes:
       - /etc/localtime:/etc/localtime:ro
