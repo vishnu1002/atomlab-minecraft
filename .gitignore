@@ -7,3 +7,6 @@ mc1/data/
 mcpak-cave-horror/data/
 mcpak-prominence-2/data/
 data/
+
+# manual local backups – world+settings tarballs in ./backup/
+backup/

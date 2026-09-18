@@ -61,8 +61,8 @@ Configure future servers from these references:
 | Server | Folder | Modpack | MC / Loader | Memory |
 |---|---|---|---|---|
 | mc1 Vanilla+ | `mc1/` | Custom Fabric set, pinned via `MODRINTH_PROJECTS` (perf: lithium, ferrite-core, c2me; maps: Xaero; utility: veinminer, graves, skinrestorer…), seed `8500081009970950196` | 26.1.2 / Fabric (`itzg/minecraft-server:latest`) | 5G + Aikar flags |
-| mc3 Cave Horror | `mcpak-cave-horror/` | [Cave Horror Project 1 v3.6](https://modrinth.com/modpack/cave-horror-project-modpack) ([project page](https://modrinth.com/project/KRCZSt8F)) | 1.20.1 / Forge (`itzg/minecraft-server:java17`) | 10G |
-| mc4 Prominence 2 | `mcpak-prominence-2/` | [Prominence II v4.1.0](https://modrinth.com/modpack/prominence-2-fabric) ([project page](https://modrinth.com/project/EGs3lC8D)) | 1.20.1 / Fabric (`itzg/minecraft-server:java17`) | 10G |
+| mc3 Cave Horror | `mcpak-cave-horror/` | [Cave Horror Project 1 v3.6](https://modrinth.com/modpack/cave-horror-project-modpack) | 1.20.1 / Forge (`itzg/minecraft-server:java17`) | 10G |
+| mc4 Prominence 2 | `mcpak-prominence-2/` | [Prominence II v4.1.0](https://modrinth.com/modpack/prominence-2-fabric) | 1.20.1 / Fabric (`itzg/minecraft-server:java17`) | 10G |
 
 All servers run survival, `ONLINE_MODE=FALSE` (any username works). Worlds live
 in each stack's `data/` dir (git-ignored, survives restarts and switches).
@@ -92,6 +92,32 @@ Switching servers:
 ```bash
 docker compose down   # in the current stack
 cd ../mcpak-cave-horror && docker compose up -d
+```
+
+## Backup & restore
+
+Manual backup, no flags — everything is asked via menu:
+
+```bash
+./backup.sh
+# 1) mc1  2) mcpak-cave-horror  3) mcpak-prominence-2  4) all
+```
+
+Saves only `world/` + settings (`server.properties`, `ops.json`,
+`whitelist.json`, `banned-*.json`, `usercache.json`, `config/`,
+plus `defaultconfigs/` / `kubejs/` where present). `mods/`, `libraries/`,
+`versions/`, `cache/`, `logs/` are skipped — they reinstall on
+`docker compose up`. Output: `backup/<stack>-DD-MM-YYYY.tar.gz`
+(git-ignored). Safe to run while the server is up (does
+`save-all flush` first; aborts that stack if the flush fails).
+
+Restore (compose files come from git, only data comes from the backup):
+
+```bash
+cd mc1   # or mcpak-cave-horror / mcpak-prominence-2
+docker compose down
+tar -xzf ../backup/mc1-18-09-2026.tar.gz -C data/
+docker compose up -d
 ```
 
 Client: create a clean Freesm instance per server with the matching pack/
