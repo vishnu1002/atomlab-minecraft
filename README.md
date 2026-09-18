@@ -1,4 +1,4 @@
-# minecraft selfhost
+# Atomlab Minecraft Server
 
 Dockerized Minecraft servers on a home host, using
 [`itzg/minecraft-server`](https://github.com/itzg/docker-minecraft-server) for
@@ -9,13 +9,14 @@ Only **one server runs at a time** — `docker compose down` before switching.
 All stacks share one playit key, so the public address follows whichever
 server is up.
 
-Public address (all servers, default port `25565`, no port needed):
+Public address (all servers, default port `25565`, no port needed) — find
+yours in the [playit dashboard](https://playit.gg) under Tunnels:
 
 ```text
-hdd-greene.tun.ply.gg
+<your-address>.playit.gg
 ```
 
-## Host specs (`tron`)
+## Server specs
 
 | Component | Detail |
 |---|---|
@@ -52,52 +53,16 @@ Configure future servers from these references:
 
 ## Servers
 
-### mc1 — Vanilla+ Fabric (first server)
+| Server | Folder | Modpack | MC / Loader | Memory |
+|---|---|---|---|---|
+| mc1 Vanilla+ | `mc1/` | Custom Fabric set, pinned via `MODRINTH_PROJECTS` (perf: lithium, ferrite-core, c2me; maps: Xaero; utility: veinminer, graves, skinrestorer…), seed `8500081009970950196` | 26.1.2 / Fabric (`itzg/minecraft-server:latest`) | 5G + Aikar flags |
+| mc3 Cave Horror | `mcpak-cave-horror/` | [Cave Horror Project 1 v3.6](https://modrinth.com/modpack/cave-horror-project-modpack) ([project page](https://modrinth.com/project/KRCZSt8F)) | 1.20.1 / Forge (`itzg/minecraft-server:java17`) | 10G |
+| mc4 Prominence 2 | `mcpak-prominence-2/` | [Prominence II v4.1.0](https://modrinth.com/modpack/prominence-2-fabric) ([project page](https://modrinth.com/project/EGs3lC8D)) | 1.20.1 / Fabric (`itzg/minecraft-server:java17`) | 10G |
 
-- Folder: `mc1/` · services: `mc1` + `playit-mc1` (`172.30.0.5`)
-- Type: custom Fabric server, **not** a Modrinth pack — mods pinned individually
-  via `MODRINTH_PROJECTS` in `mc1/docker-compose.yml`
-- MC `26.1.2` / Fabric · image `itzg/minecraft-server:latest` · Java auto (latest)
-- Memory: `5G` + Aikar flags · mode survival / difficulty normal
-- Seed: `8500081009970950196` · MOTD `MC1` · `ONLINE_MODE=FALSE`
-- Perf mods: lithium, ferrite-core, c2me-fabric · maps: Xaero world+minimap ·
-  utility: veinminer, universal-graves, skinrestorer, polymer, moogs structures…
-- World: `mc1/data/` (4G, persists on host, git-ignored)
-- Client: clean Freesm instance with the same Fabric loader + mod versions
-
-### mc3 — Cave Horror Project (Forge modpack)
-
-- Folder: `mcpak-cave-horror/` · services: `mc3` + `playit-mc3` (`172.30.0.7`)
-- Modpack: [Cave Horror Project 1](https://modrinth.com/modpack/cave-horror-project-modpack)
-  (permanent link: https://modrinth.com/project/KRCZSt8F), pinned **v3.6**
-- MC `1.20.1` / Forge · image `itzg/minecraft-server:java17`
-- Memory: `10G` · MOTD `Cave Horror` · `ONLINE_MODE=FALSE`
-- World: `mcpak-cave-horror/data/` (persists on host, git-ignored)
-- Client: install pack **v3.6** in Freesm, join `hdd-greene.tun.ply.gg`
-- Known limit: Simple Voice Chat (UDP `24454`) is up locally but not reachable
-  through the TCP playit tunnel — walkie-talkies stay silent remotely
-
-### mc4 — Prominence II (Fabric modpack)
-
-- Folder: `mcpak-prominence-2/` · services: `mc4` + `playit-mc4` (`172.30.0.8`)
-- Modpack: [Prominence II – Hasturian Era](https://modrinth.com/modpack/prominence-2-fabric)
-  (permanent link: https://modrinth.com/project/EGs3lC8D), pinned **v4.1.0**
-- MC `1.20.1` / Fabric · image `itzg/minecraft-server:java17`
-- Memory: `10G` · MOTD `Prominence 2` · `ONLINE_MODE=FALSE`
-- World: `mcpak-prominence-2/data/` (created on first start, git-ignored)
-- Client: install pack **v4.1.0** in Freesm, join `hdd-greene.tun.ply.gg`
-
-## How it works
-
-- **Shared key:** repo-root `.env` holds the single playit `SECRET_KEY`.
-  Each stack's playit service reads it via `env_file: ../.env`
-  (see `.env.example` for the template). No per-folder `.env` files.
-- **Networking:** each stack has its own bridge (`172.30.0.0/24`, fixed IPs
-  `.5/.7/.8`); the playit sidecar uses `network_mode: service:<game>` and
-  starts only once the game is `healthy` (`mc-monitor` healthcheck).
-- **Persistence:** `*/data/` bind-mounts hold worlds, configs, `server.properties`,
-  RCON password. Ignored in git, never deleted on `down` — progress survives
-  restarts and server switches.
+All servers run survival, `ONLINE_MODE=FALSE` (any username works). Worlds live
+in each stack's `data/` dir (git-ignored, survives restarts and switches).
+Cave Horror note: Simple Voice Chat (UDP `24454`) runs locally but isn't
+reachable through the TCP playit tunnel.
 
 ## Setup
 
@@ -125,19 +90,4 @@ cd ../mcpak-cave-horror && docker compose up -d
 ```
 
 Client: create a clean Freesm instance per server with the matching pack/
-loader + mods, then Multiplayer → Add Server → `hdd-greene.tun.ply.gg`.
-(`ONLINE_MODE=FALSE`, so any username works.)
-
-## Troubleshooting
-
-- `Server is still starting! Please wait` — joined during boot; wait for
-  `Done (...)!` in the logs and reconnect.
-- `Can't keep up! ...` once after startup is normal for big packs; only
-  investigate if it repeats constantly (check RAM via `free -h`, `docker stats`).
-- `LanServerPinger: Network is unreachable` — harmless in Docker.
-- Playit `failed ... Network unreachable` on an IPv6 address then success on
-  IPv4 — normal fallback. Occasional `SessionNotSetup` during handshake is
-  transient; steady state is `tunnel running, 1 tunnels registered`.
-- The public address lives in the [playit dashboard](https://playit.gg), not in
-  container logs — the agent only logs `1 tunnels registered`.
-- Live log viewer: Dozzle on `:8888` (if running).
+loader + mods, then Multiplayer → Add Server → your tunnel address.
