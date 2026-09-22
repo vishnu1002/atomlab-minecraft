@@ -11,13 +11,14 @@ REPO_NAME="$(basename "$REPO_ROOT")"
 BACKUP_ROOT="$REPO_ROOT/backup"
 DATE="$(date +%d-%m-%Y)"
 
-STACKS=("mc1" "mcpak-cave-horror" "mcpak-prominence-2")
+STACKS=("mc1" "mcpak-cave-horror" "mcpak-prominence-2" "mcpak-biohazard")
 
 container_for() {
   case "$1" in
     mc1) echo "mc1" ;;
     mcpak-cave-horror) echo "mc3" ;;
     mcpak-prominence-2) echo "mc4" ;;
+    mcpak-biohazard) echo "mc5" ;;
   esac
 }
 
@@ -142,17 +143,19 @@ echo "Which world to back up?"
 echo "  1) mc1"
 echo "  2) mcpak-cave-horror"
 echo "  3) mcpak-prominence-2"
-echo "  4) all"
+echo "  4) mcpak-biohazard"
+echo "  5) all"
 echo ""
 choice=""
-read -r -p "Enter choice [1-4]: " choice
+read -r -p "Enter choice [1-5]: " choice
 
 targets=()
 case "$choice" in
   1) targets=("mc1") ;;
   2) targets=("mcpak-cave-horror") ;;
   3) targets=("mcpak-prominence-2") ;;
-  4) targets=("${STACKS[@]}") ;;
+  4) targets=("mcpak-biohazard") ;;
+  5) targets=("${STACKS[@]}") ;;
   *) echo "Invalid choice, aborting."; exit 1 ;;
 esac
 

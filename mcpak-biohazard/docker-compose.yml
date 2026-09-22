@@ -1,0 +1,50 @@
+# itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
+# Mirror (rendered): https://docker-minecraft-server.readthedocs.io/en/latest/
+# Modpack: Biohazard: Project Genesis – story-driven zombie apocalypse, 100+ weapons.
+#   CurseForge page: https://www.curseforge.com/minecraft/modpacks/biohazard-project-genesis
+#   Project ID: 1082278
+# Pinned version: V0.4.6.1 (File ID 8869004) | Loader: Forge | MC: 1.20.1 (image java17) | MEMORY=10G
+# Note: java17 image includes a built-in CurseForge API key; set CF_API_KEY only if you need your own.
+services:
+  mc5:
+    image: itzg/minecraft-server:java17
+    container_name: mc5
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    environment:
+      EULA: "TRUE"
+      MEMORY: "10G"
+      TYPE: "AUTO_CURSEFORGE"
+      CF_SLUG: "biohazard-project-genesis"
+      CF_FILE_ID: "8869004"
+      ONLINE_MODE: "FALSE"
+      MOTD: "Biohazard: Project Genesis"
+      USE_AIKAR_FLAGS: "true"
+      VIEW_DISTANCE: "8"
+      SIMULATION_DISTANCE: "6"
+      MAX_TICK_TIME: "-1"
+    volumes:
+      - ./data:/data
+      - /etc/localtime:/etc/localtime:ro
+    expose: ["25565"]
+    healthcheck:
+      test: ["CMD", "mc-monitor", "status", "--host", "127.0.0.1"]
+      interval: 45s
+      timeout: 15s
+      retries: 4
+
+  playit-mc5:
+    image: ghcr.io/playit-cloud/playit-agent:0.17
+    container_name: playit-mc5
+    restart: unless-stopped
+    env_file:
+      - ../.env # shared repo-root playit key (SECRET_KEY)
+    environment:
+      TZ: "UTC"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      mc5:
+        condition: service_healthy
+    network_mode: "service:mc5"

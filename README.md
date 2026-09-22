@@ -63,6 +63,7 @@ Configure future servers from these references:
 | mc1 Vanilla+ | `mc1/` | Custom Fabric set, pinned via `MODRINTH_PROJECTS` (perf: lithium, ferrite-core, c2me; maps: Xaero; utility: veinminer, graves, skinrestorer…), seed `8500081009970950196` | 26.1.2 / Fabric (`itzg/minecraft-server:latest`) | 5G + Aikar flags |
 | mc3 Cave Horror | `mcpak-cave-horror/` | [Cave Horror Project 1 v3.6](https://modrinth.com/modpack/cave-horror-project-modpack) | 1.20.1 / Forge (`itzg/minecraft-server:java17`) | 10G |
 | mc4 Prominence 2 | `mcpak-prominence-2/` | [Prominence II v4.1.0](https://modrinth.com/modpack/prominence-2-fabric) | 1.20.1 / Fabric (`itzg/minecraft-server:java17`) | 10G |
+| mc5 Biohazard | `mcpak-biohazard/` | [Biohazard: Project Genesis V0.4.6.1](https://www.curseforge.com/minecraft/modpacks/biohazard-project-genesis) (File ID `8869004`) | 1.20.1 / Forge (`itzg/minecraft-server:java17`, `TYPE: AUTO_CURSEFORGE`) | 10G |
 
 All servers run survival, `ONLINE_MODE=FALSE` (any username works). Worlds live
 in each stack's `data/` dir (git-ignored, survives restarts and switches).
@@ -78,12 +79,12 @@ agent key, Freesm launcher for clients.
 # one-time: put the playit agent key in the repo root
 cp .env.example .env   # fill in SECRET_KEY
 
-# start one server (mc1, mcpak-cave-horror or mcpak-prominence-2)
+# start one server (mc1, mcpak-cave-horror, mcpak-prominence-2 or mcpak-biohazard)
 cd mc1
 docker compose up -d
 
 # follow startup (Forge packs take ~2 min to reach "Done (...)!")
-docker logs -f mc1        # mc3 / mc4 in the modpack stacks
+docker logs -f mc1        # mc3 / mc4 / mc5 in the modpack stacks
 docker attach mc1         # live server console (detach: Ctrl-p Ctrl-q)
 ```
 
@@ -100,7 +101,7 @@ Manual backup, no flags — everything is asked via menu:
 
 ```bash
 ./backup.sh
-# 1) mc1  2) mcpak-cave-horror  3) mcpak-prominence-2  4) all
+# 1) mc1  2) mcpak-cave-horror  3) mcpak-prominence-2  4) mcpak-biohazard  5) all
 ```
 
 Saves only `world/` + settings (`server.properties`, `ops.json`,
@@ -120,7 +121,7 @@ available with `gzip` fallback, and a live progress line is shown:
 Restore (compose files come from git, only data comes from the backup):
 
 ```bash
-cd mc1   # or mcpak-cave-horror / mcpak-prominence-2
+cd mc1   # or mcpak-cave-horror / mcpak-prominence-2 / mcpak-biohazard
 docker compose down
 tar -xzf ../backup/mc1-18-09-2026.tar.gz -C data/
 docker compose up -d
