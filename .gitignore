@@ -4,9 +4,12 @@
 
 # itzg /data mounts – server worlds, regenerated on `docker compose up`
 mc1/data/
+mc2/data/
 mcpak-cave-horror/data/
 mcpak-prominence-2/data/
 mcpak-biohazard/data/
+mcpak-biohazard/downloads/
+mc6/data/
 data/
 
 # manual local backups – world+settings tarballs in ./backup/

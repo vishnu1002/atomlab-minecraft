@@ -1,0 +1,62 @@
+# itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
+# Mirror (rendered): https://docker-minecraft-server.readthedocs.io/en/latest/
+# Server: mc2 "Vanilla+" – Fabric with Chunky + Distant Horizons.
+# TYPE=FABRIC, VERSION=26.3, MEMORY=10G.
+# Client needs Fabric loader 26.3 + matching mods (see README).
+services:
+  mc2:
+    image: itzg/minecraft-server:latest
+    container_name: mc2
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    environment:
+      EULA: "TRUE"
+      TYPE: "FABRIC"
+      VERSION: "26.3"
+      MEMORY: "10G"
+      MODRINTH_LOADER: "fabric"
+      MODRINTH_PROJECTS: |
+        fabric-api:0.161.0+26.3
+        chunky:1.5.3
+        distanthorizons:3.3.2-26.3
+        ferrite-core:9.0.0-fabric
+        lithium:mc26.3-0.26.1-fabric
+        appleskin:3.0.10+mc26.3
+        almanac:1.26.9.1
+        lmd:1.26.9.2
+      DIFFICULTY: "normal"
+      MODE: "survival"
+      TZ: "UTC"
+      USE_AIKAR_FLAGS: "true"
+      ENABLE_AUTOPAUSE: "false"
+      ONLINE_MODE: "FALSE"
+      MOTD: "MC2 Vanilla"
+      SPAWN_PROTECTION: "0"
+      MAX_TICK_TIME: "-1"
+      VIEW_DISTANCE: "20"
+      SIMULATION_DISTANCE: "20"
+      CREATE_CONSOLE_IN_PIPE: "true"
+    volumes:
+      - ./data:/data
+      - /etc/localtime:/etc/localtime:ro
+    expose: ["25565"]
+    healthcheck:
+      test: ["CMD", "mc-monitor", "status", "--host", "127.0.0.1"]
+      interval: 45s
+      timeout: 15s
+      retries: 4
+  playit-mc2:
+    image: ghcr.io/playit-cloud/playit-agent:0.17
+    container_name: playit-mc2
+    restart: unless-stopped
+    env_file:
+      - ../.env # shared repo-root playit key (SECRET_KEY)
+    environment:
+      TZ: "UTC"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      mc2:
+        condition: service_healthy
+    network_mode: "service:mc2"

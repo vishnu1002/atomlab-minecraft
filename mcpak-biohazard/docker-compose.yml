@@ -1,50 +1,48 @@
 # itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
-# Mirror (rendered): https://docker-minecraft-server.readthedocs.io/en/latest/
-# Modpack: Biohazard: Project Genesis – story-driven zombie apocalypse, 100+ weapons.
-#   CurseForge page: https://www.curseforge.com/minecraft/modpacks/biohazard-project-genesis
-#   Project ID: 1082278
-# Pinned version: V0.4.6.1 (File ID 8869004) | Loader: Forge | MC: 1.20.1 (image java17) | MEMORY=10G
-# Note: java17 image includes a built-in CurseForge API key; set CF_API_KEY only if you need your own.
+# Server pack: Biohazard: Project Genesis V0.4.6.1 – OFFICIAL CurseForge server pack
+#   File ID 8869015 (Biohazard_Beta_0.4.6.1_server_pack.zip) | Loader: Forge 47.4.0 | MC: 1.20.1 | Java 17
+#   It's a Griefed/ServerStarterJar pack pre-staged in ./data; its own
+#   manifest.json is ServerPackCreator format, NOT a CurseForge modpack
+#   manifest, so AUTO_CURSEFORGE/CF_* will NOT work with it. We only reuse the
+#   itzg image for mc-monitor healthcheck + tooling and run its start.sh.
+#   Heap is configured in data/variables.txt (JAVA_ARGS: -Xms4G -Xmx4G).
 services:
-  mc5:
+  mcpak1:
     image: itzg/minecraft-server:java17
-    container_name: mc5
+    container_name: mcpak1
     restart: unless-stopped
     tty: true
     stdin_open: true
+    entrypoint: ["/bin/bash", "-c", "cd /data && exec ./start.sh"]
     environment:
-      EULA: "TRUE"
-      MEMORY: "10G"
-      TYPE: "AUTO_CURSEFORGE"
-      CF_SLUG: "biohazard-project-genesis"
-      CF_FILE_ID: "8869004"
-      ONLINE_MODE: "FALSE"
-      MOTD: "Biohazard: Project Genesis"
-      USE_AIKAR_FLAGS: "true"
-      VIEW_DISTANCE: "8"
-      SIMULATION_DISTANCE: "6"
-      MAX_TICK_TIME: "-1"
+      TZ: "UTC"
     volumes:
       - ./data:/data
       - /etc/localtime:/etc/localtime:ro
-    expose: ["25565"]
+    ports: ["25566:25565"]
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "127.0.0.1"]
       interval: 45s
       timeout: 15s
       retries: 4
+      start_period: 13m
 
-  playit-mc5:
-    image: ghcr.io/playit-cloud/playit-agent:0.17
-    container_name: playit-mc5
+  playit-mcpak1:
+    image: ghcr.io/playit-cloud/playit-agent:1.0
+    container_name: playit-mcpak1
     restart: unless-stopped
     env_file:
-      - ../.env # shared repo-root playit key (SECRET_KEY)
+      - .env
     environment:
       TZ: "UTC"
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "pgrep", "playitd"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     depends_on:
-      mc5:
+      mcpak1:
         condition: service_healthy
-    network_mode: "service:mc5"
+    network_mode: "service:mcpak1"

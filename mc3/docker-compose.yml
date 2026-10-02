@@ -1,0 +1,57 @@
+# itzg/minecraft-server docs: https://github.com/itzg/docker-minecraft-server/tree/master/docs
+# Server: mc3 "Vanilla" – plain vanilla Java server.
+# TYPE=VANILLA, VERSION=26.3, MEMORY=4G.
+services:
+  mc3:
+    image: itzg/minecraft-server:latest
+    container_name: mc3
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    environment:
+      EULA: "TRUE"
+      TYPE: "VANILLA"
+      VERSION: "26.3"
+      MEMORY: "4G"
+      DIFFICULTY: "normal"
+      MODE: "survival"
+      TZ: "UTC"
+      SEED: "-1718501946501227358"
+      USE_AIKAR_FLAGS: "true"
+      JVM_OPTS: "--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow"
+      ENABLE_AUTOPAUSE: "false"
+      ONLINE_MODE: "FALSE"
+      MOTD: "MC3 Vanilla"
+      SPAWN_PROTECTION: "0"
+      MAX_TICK_TIME: "-1"
+      VIEW_DISTANCE: "20"
+      SIMULATION_DISTANCE: "20"
+      CREATE_CONSOLE_IN_PIPE: "true"
+    volumes:
+      - ./data:/data
+      - /etc/localtime:/etc/localtime:ro
+    expose: ["25565"]
+    healthcheck:
+      test: ["CMD", "mc-monitor", "status", "--host", "127.0.0.1"]
+      interval: 45s
+      timeout: 15s
+      retries: 4
+  playit-mc3:
+    image: ghcr.io/playit-cloud/playit-agent:1.0
+    container_name: playit-mc3
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      TZ: "UTC"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "pgrep", "playitd"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      mc3:
+        condition: service_healthy
+    network_mode: "service:mc3"
